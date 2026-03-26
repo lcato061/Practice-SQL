@@ -1,0 +1,25 @@
+WITH signup_month AS (
+    SELECT 
+	user_id,
+	date_trunc('month', MIN(CASE WHEN event_type='signup' THEN event_date END) as signup_month
+	from events
+	group by user_id
+), 
+active_users as (
+	SELECT 
+	e.user_id,
+	date_trunc('month', e.event_date) as month,
+	from events e
+)
+
+select 
+	s.signup_month, 
+	a.month,
+	COUNT(DISTINCT a.user_id) as active_users
+FROM signup_month s
+JOIN active_users a
+	ON s.user_id=a.user_id
+	AND a.month BETWEEN s.signup_month AND s.signup_month + INTERVAL '2 months'
+GROUP BY s.signup_month, a.month
+ORDER BY s.signup_month, a.month
+;
